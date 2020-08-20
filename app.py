@@ -1,17 +1,27 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for, flash
 from flask import request
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from datetime import datetime
+from main.forms import NameForm
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "fduaihduishfduiasfydiwshfbuidsdshuaifyaiusdui"  # 密匙
 bootstrap = Bootstrap(app)  # init bootstrap
 moment = Moment(app)
 
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def hello_world():
-    return render_template("index.html", current_time=datetime.utcnow())
+    form = NameForm()
+    if form.validate_on_submit():
+        old_name = session.get("name")
+        if (not old_name) and (old_name != form.name.data):
+            flash("submit name changed!")
+        session["name"] = form.name.data
+        # return redirect(url_for("hello_world"))
+        return redirect("/")
+    return render_template("index.html", current_time=datetime.utcnow(), form=form, name=session.get("name"))
 
 
 @app.route("/index")
